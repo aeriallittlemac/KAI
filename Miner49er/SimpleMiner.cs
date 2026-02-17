@@ -29,39 +29,41 @@ namespace Miner49er
             bankingState = MakeNewState("Banking");
 
             // set mining transitions
-            miningState.addTransition("tick",
-                new ConditionDelegate[] { new ConditionDelegate(this.parched) },
-                new ActionDelegate[] { new ActionDelegate(this.incrementThirst) }, drinkingState);
+            //miningState.addTransition("tick",
+            //    new ConditionDelegate[] { new ConditionDelegate(this.parched) },
+            //    new ActionDelegate[] { new ActionDelegate(this.incrementThirst) }, drinkingState);
             
             miningState.addTransition("tick",
                 new ConditionDelegate[] { new ConditionDelegate(this.pocketsFull) },
-                new ActionDelegate[] { new ActionDelegate(this.incrementThirst) }, bankingState);
+                new ActionDelegate[] { new ActionDelegate(this.goingToBank) }, bankingState);
             
             miningState.addTransition("tick",
                 new ConditionDelegate[] { }, 
                 new ActionDelegate[] { new ActionDelegate(this.dig) }, miningState);
 
-            // set drinking transitions
-            drinkingState.addTransition("tick",
-                new ConditionDelegate[] { new ConditionDelegate(this.thirsty) },
-                new ActionDelegate[] { new ActionDelegate(this.takeDrink) }, drinkingState);
-            
-            drinkingState.addTransition("tick",
-                new ConditionDelegate[] { },
-                new ActionDelegate[] { new ActionDelegate(this.incrementThirst) }, miningState);
+           
 
             // set banking transitions
             bankingState.addTransition("tick",
                 new ConditionDelegate[] { new ConditionDelegate(this.pocketsNotEmpty) },
                 new ActionDelegate[] { new ActionDelegate(this.depositGold) }, bankingState);
 
-            bankingState.addTransition("tick",
-                new ConditionDelegate[] { new ConditionDelegate(this.parched) },
-                new ActionDelegate[] { }, drinkingState);
+            //bankingState.addTransition("tick",
+            //    new ConditionDelegate[] { new ConditionDelegate(this.parched) },
+            //    new ActionDelegate[] { }, drinkingState);
             
             bankingState.addTransition("tick",
                 new ConditionDelegate[] { },
-                new ActionDelegate[] { }, miningState);
+                new ActionDelegate[] { new ActionDelegate(this.goingToBar) }, drinkingState);
+
+            // set drinking transitions
+            drinkingState.addTransition("tick",
+                new ConditionDelegate[] { new ConditionDelegate(this.thirsty) },
+                new ActionDelegate[] { new ActionDelegate(this.takeDrink) }, drinkingState);
+
+            drinkingState.addTransition("tick",
+                new ConditionDelegate[] { },
+                new ActionDelegate[] { new ActionDelegate(this.goingToMine) }, miningState);
 
             // FIXED: Using PascalCase to match your FSAImpl.SetCurrentState method
             SetCurrentState(miningState);
@@ -114,17 +116,30 @@ namespace Miner49er
             thirst++;
             Console.WriteLine("Miner is digging.");
         }
-
-        private void incrementThirst(FSA fsa)
+        private void goingToBank(FSA fsa)
         {
             thirst++;
+            Console.WriteLine("Going to bank.");
         }
+        private void goingToBar(FSA fsa)
+        {
+            Console.WriteLine("Going to bar.");
+        }
+        private void goingToMine(FSA fsa)
+        {
+            thirst++;
+            Console.WriteLine("Going to mine.");
+        }
+        //private void incrementThirst(FSA fsa)
+        //{
+        //    thirst++;
+        //}
 
-        private Boolean pocketsFull(FSA fsa) => gold >= 5;
+        private Boolean pocketsFull(FSA fsa) => gold >= 10;
 
         private Boolean pocketsNotEmpty(FSA fsa) => gold > 0;
 
-        private Boolean thirsty(FSA fsa) => thirst > 0;
+        private Boolean thirsty(FSA fsa) => thirst > 5;
 
         public void printStatus()
         {
